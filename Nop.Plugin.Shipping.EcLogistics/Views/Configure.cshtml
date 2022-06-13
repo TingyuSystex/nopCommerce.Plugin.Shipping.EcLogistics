@@ -1,0 +1,127 @@
+﻿@model EcLogisticsModel
+
+@using Nop.Plugin.Shipping.EcLogistics.Models
+@using Nop.Web.Framework.Models.DataTables
+@using Nop.Web.Framework.TagHelpers.Admin
+@using Nop.Web.Framework.TagHelpers.Shared
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = "_ConfigurePlugin";
+}
+
+<form asp-controller="EcLogistics" asp-action="Configure" method="post">
+    <div class="cards-group">
+        <div class="card card-default">
+            <div class="card-header">
+                綠界物流整合API
+            </div>
+            <div class="card-body">
+                @Html.Raw(T("Plugins.Shipping.EcLogistics.Configuration.Instructions"))
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="MerchantId" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="MerchantId" asp-required="true"/>
+                        <span asp-validation-for="MerchantId"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="HashKey" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="HashKey" asp-required="true"/>
+                        <span asp-validation-for="HashKey"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="HashIV" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="HashIV" asp-required="true"/>
+                        <span asp-validation-for="HashIV"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="PlatformId" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="PlatformId" />
+                        <span asp-validation-for="PlatformId"></span>
+                    </div>
+                </div>
+                
+                <div class="form-group row">
+                    <div class="col-md-9 offset-md-3">
+                        <button type="submit" name="save" class="btn btn-primary">@T("Admin.Common.Save")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-default">
+            <div class="card-header">
+                送貨方法
+            </div>
+            <div class="card-body">
+                <div id="ecl-shipping-methods-area">
+                    @await Html.PartialAsync("Table", new DataTablesModel
+                    {
+                        Name = "eclshippingmethods-grid",
+                        RowIdBasedOnField = nameof(EclShippingMethodsModel.Name),
+                        UrlRead = new DataUrl("GetShippingMethods", "EcLogistics", null),
+                        UrlUpdate = new DataUrl("UpdateShippingMethods", "EcLogistics", null),
+                        Paging = false,
+                        RefreshButton = false,
+                        ColumnCollection = new List<ColumnProperty>
+                        {
+                            new ColumnProperty(nameof(EclShippingMethodsModel.Name))
+                            {
+                                Title = T("Plugins.Shipping.EcLogistics.ShippingMethod.Name").Text,
+                                Width = "300"
+                            },
+                            new ColumnProperty(nameof(EclShippingMethodsModel.Description))
+                            {
+                                Title = T("Plugins.Shipping.EcLogistics.ShippingMethod.Description").Text,
+                                Width = "400"
+                            },
+                            new ColumnProperty(nameof(EclShippingMethodsModel.Rate))
+                            {
+                                Title = T("Plugins.Shipping.EcLogistics.ShippingMethod.Rate").Text,
+                                Width = "100",
+                                ClassName = NopColumnClassDefaults.CenterAll
+                            },
+                            new ColumnProperty(nameof(EclShippingMethodsModel.DisplayOrder))
+                            {
+                                Title = T("Plugins.Shipping.EcLogistics.ShippingMethod.DisplayOrder").Text,
+                                Width = "150",
+                                ClassName = NopColumnClassDefaults.CenterAll
+                            },
+                            new ColumnProperty(nameof(EclShippingMethodsModel.IsActive))
+                            {
+                                Title = T("Plugins.Shipping.EcLogistics.ShippingMethod.IsActive").Text,
+                                Width = "100",
+                                ClassName = NopColumnClassDefaults.CenterAll,
+                                Render = new RenderBoolean()
+                            },
+                            new ColumnProperty(nameof(EclShippingMethodsModel.SubTypeCode))
+                            {
+                                Title = T("Admin.Common.Edit").Text,
+                                Width = "200",
+                                ClassName =  NopColumnClassDefaults.Button,
+                                Render = new RenderButtonEdit(new DataUrl("EditSubType"))
+                            }
+                        }
+                    })
+                </div>
+
+            </div>
+        </div>
+        
+    </div>
+</form>
