@@ -1,0 +1,128 @@
+﻿@model ConfigureCvsModel
+
+@using Nop.Plugin.Shipping.EcLogistics.Models
+@using Nop.Web.Framework.TagHelpers.Admin
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = "_ConfigurePlugin";
+    var tempertureH = Model.TemperatureType == "H";
+    var tempertureL = Model.TemperatureType == "L";
+}
+
+<form asp-controller="EcLogistics" asp-action="ConfigureCVS" method="post">
+    <div class="cards-group">
+        <div class="card card-default">
+            <div class="card-header">
+                @T("Plugins.Shipping.EcLogistics.ShippingMethod.EditTitle") - @T("Plugins.Shipping.EcLogistics" + Model.Name + ".Name")
+            </div>
+            <div class="card-body">
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="Name"/>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="form-text-row">@Model.Name</div>
+                        <input type="hidden" asp-for="Name"/>
+                        <span asp-validation-for="Name"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="Description"/>
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="Description" asp-required="true"/>
+                        <span asp-validation-for="Description"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="AvailablePaymentMethod" />
+                    </div>
+                    <div class="col-md-9">
+                        @foreach (var pm in Model.AvailablePaymentMethod)
+                        {
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" type="checkbox" name="PaymentMethods" value="@(pm.Value)" checked="@(pm.Selected)" />
+                                    @(pm.Text)
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="TemperatureType"/>
+                    </div>
+                    <div>
+                        <div style="margin: 10px 10px 0 10px;">
+                            <input id="TemperatureType_H" type="radio" name="TemperatureType" value="H" checked=@tempertureH />
+                            <label for="TemperatureType_H">@T("Plugins.Shipping.EcLogistics.Fields.TemperatureType.H")</label>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="margin: 10px 10px 0 10px;">
+                            <input id="TemperatureType_L" type="radio" name="TemperatureType" value="L" checked=@tempertureL />
+                            <label for="TemperatureType_L">@T("Plugins.Shipping.EcLogistics.Fields.TemperatureType.L")</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="LengthLimit"/>
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="LengthLimit"/>
+                        <span asp-validation-for="LengthLimit"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="SizeLimit"/>
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="SizeLimit"/>
+                        <span asp-validation-for="SizeLimit"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="WeightSizeLimit"/>
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="WeightSizeLimit"/>
+                        <span asp-validation-for="WeightSizeLimit"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="Fee"/>
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="Fee"/>
+                        <span asp-validation-for="Fee"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="TransitDay"/>
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="TransitDay"/>
+                        <span asp-validation-for="TransitDay"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-9 offset-md-3">
+                        <button type="submit" name="save" class="btn btn-primary">@T("Admin.Common.Save")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</form>

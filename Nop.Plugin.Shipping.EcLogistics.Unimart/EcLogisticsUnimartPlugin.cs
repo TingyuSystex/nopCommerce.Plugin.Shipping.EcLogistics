@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Nop.Core;
 using Nop.Core.Domain.Shipping;
+using Nop.Data;
+using Nop.Plugin.Shipping.EcLogistics.Domain;
 using Nop.Services.Common;
 using Nop.Services.Configuration;
 using Nop.Services.Localization;
@@ -12,27 +14,30 @@ using Nop.Services.Plugins;
 using Nop.Services.Shipping;
 using Nop.Services.Shipping.Tracking;
 
-namespace Nop.Plugin.Shipping.EcLogistics
+namespace Nop.Plugin.Shipping.EcLogistics.Unimart
 {
-    public class EcLogisticsPlugin : BasePlugin, IShippingRateComputationMethod
+    public class EcLogisticsUnimartPlugin : BasePlugin, IShippingRateComputationMethod
     {
         #region Fields
 
         private readonly ILocalizationService _localizationService;
         private readonly ISettingService _settingService;
         private readonly IWebHelper _webHelper;
+        private readonly IRepository<EcPayCvsShippingMethod> _ecPayCvsShippingMethodRepository;
 
         #endregion
 
         #region Ctor
 
-        public EcLogisticsPlugin(ILocalizationService localizationService,
+        public EcLogisticsUnimartPlugin(ILocalizationService localizationService,
             ISettingService settingService,
-            IWebHelper webHelper)
+            IWebHelper webHelper,
+            IRepository<EcPayCvsShippingMethod> ecPayCvsShippingMethodRepository)
         {
             _localizationService = localizationService;
             _settingService = settingService;
             _webHelper = webHelper;
+            _ecPayCvsShippingMethodRepository = ecPayCvsShippingMethodRepository;
         }
 
         #endregion
@@ -41,59 +46,26 @@ namespace Nop.Plugin.Shipping.EcLogistics
 
         public override string GetConfigurationPageUrl()
         {
-            return _webHelper.GetStoreLocation() + "Admin/EcLogistics/Configure";
+            return _webHelper.GetStoreLocation() + "Admin/EcLogistics/ConfigureCVS/UNIMART";
         }
 
         public override async Task InstallAsync()
         {
+            // insert UNIMART to EcPayCvsShippingMethod in DB 
+            await _ecPayCvsShippingMethodRepository.InsertAsync(new EcPayCvsShippingMethod
+            {
+                Name = "UNIMART",
+                Description = "7-11 超商取貨",
+                PaymentMethod = "",
+                TemperatureType = "H",
+                CreatedOnUtc = DateTime.UtcNow,
+                UpdatedOnUtc = DateTime.UtcNow
+            });
+
             //locales
             await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
             {
-                ["Plugins.Shipping.EcLogistics.Configuration.Instructions"] = @"
-                    <p>
-	                    註冊綠界會員（<a href=""https://member.ecpay.com.tw/MemberReg/MemberRegister?back=N"" target=""_blank"">
-                        https://member.ecpay.com.tw/MemberReg/MemberRegister?back=N</a>）<br />
-                        取得MerchantID及HashKey、HashIV：廠商後台 → 系統開發管理 → 系統介接設定 <br />
-                        廠商後台：<a href=""https://vendor.ecpay.com.tw/"" target=""_blank"">https://vendor.ecpay.com.tw/</a> <br />
-	                    <br />
-                    </p>",
-
-                ["Plugins.Shipping.EcLogistics.Fields.MerchantId"] = "MerchantID",
-                ["Plugins.Shipping.EcLogistics.Fields.MerchantId.Hint"] = "輸入廠商(會員)編號",
-                ["Plugins.Shipping.EcLogistics.Fields.HashKey"] = "HashKey",
-                ["Plugins.Shipping.EcLogistics.Fields.HashKey.Hint"] = "物流介接的HashKey",
-                ["Plugins.Shipping.EcLogistics.Fields.HashIV"] = "HashIV",
-                ["Plugins.Shipping.EcLogistics.Fields.HashIV.Hint"] = "物流介接的HashIV",
-                ["Plugins.Shipping.EcLogistics.Fields.PlatformId"] = "特約合作平台商代號",
-                ["Plugins.Shipping.EcLogistics.Fields.PlatformId.Hint"] = "由綠界科技提供此參數為專案合作的平台商使用，一般廠商介接請放空值。若為專案合作的平台商使用時，MerchantID請帶賣家所綁定的MerchantID。",
-                
-                ["Plugins.Shipping.EcLogistics.Fields.MerchantId.Required"] = "MerchantID必填",
-                ["Plugins.Shipping.EcLogistics.Fields.HashKey.Required"] = "HashKey必填",
-                ["Plugins.Shipping.EcLogistics.Fields.HashIV.Required"] = "HashIV必填",
-
-                ["Plugins.Shipping.EcLogistics.ShippingMethod.EditTitle"] = "編輯配送方法",
-                ["Plugins.Shipping.EcLogistics.Fields.Name"] = "名稱",
-                ["Plugins.Shipping.EcLogistics.Fields.Name.Hint"] = "系統代號",
-                ["Plugins.Shipping.EcLogistics.Fields.Description"] = "描述",
-                ["Plugins.Shipping.EcLogistics.Fields.Description.Hint"] = "顯示於結帳頁面之配送方法描述",
-                ["Plugins.Shipping.EcLogistics.Fields.PaymentMethod"] = "付款方式",
-                ["Plugins.Shipping.EcLogistics.Fields.PaymentMethod.Hint"] = "配送方法適用付款方式",
-                ["Plugins.Shipping.EcLogistics.Fields.TemperatureType"] = "適用溫層",
-                ["Plugins.Shipping.EcLogistics.Fields.TemperatureType.Hint"] = "配送方法適用溫層",
-                ["Plugins.Shipping.EcLogistics.Fields.TemperatureType.H"] = "常溫",
-                ["Plugins.Shipping.EcLogistics.Fields.TemperatureType.L"] = "低溫",
-                ["Plugins.Shipping.EcLogistics.Fields.LengthLimit"] = "單邊長度限制",
-                ["Plugins.Shipping.EcLogistics.Fields.LengthLimit.Hint"] = "單邊長度最長限制(cm)",
-                ["Plugins.Shipping.EcLogistics.Fields.SizeLimit"] = "重量限制",
-                ["Plugins.Shipping.EcLogistics.Fields.SizeLimit.Hint"] = "重量限制(kg)",
-                ["Plugins.Shipping.EcLogistics.Fields.WeightSizeLimit"] = "材積(長+寬+高)",
-                ["Plugins.Shipping.EcLogistics.Fields.WeightSizeLimit.Hint"] = "長+寬+高(cm)",
-                ["Plugins.Shipping.EcLogistics.Fields.Fee"] = "運費",
-                ["Plugins.Shipping.EcLogistics.Fields.Fee.Hint"] = "配送運費",
-                ["Plugins.Shipping.EcLogistics.Fields.TransitDay"] = "配送天數",
-                ["Plugins.Shipping.EcLogistics.Fields.TransitDay.Hint"] = "配送所需天數",
-                ["Plugins.Shipping.EcLogistics.Fields.Description.Required"] = "配送方法描述必填",
-                ["Plugins.Shipping.EcLogistics.Fields.Description.LengthError"] = "配送方法描述長度需小於100",
+                ["Plugins.Shipping.EcLogisticsUnimart.Name"] = "7-11 超商取貨",
             });
 
             await base.InstallAsync();
@@ -101,8 +73,12 @@ namespace Nop.Plugin.Shipping.EcLogistics
 
         public override async Task UninstallAsync()
         {
+            var modelData = await _ecPayCvsShippingMethodRepository.GetAllAsync(x =>
+                x.Where(sm => sm.Name.Equals("UNIMART")));
+            await _ecPayCvsShippingMethodRepository.DeleteAsync(modelData[0]);
+
             //locales
-            await _localizationService.DeleteLocaleResourcesAsync("Plugins.Shipping.EcLogistics");
+            await _localizationService.DeleteLocaleResourcesAsync("Plugins.Shipping.EcLogisticsUnimart");
 
             await base.UninstallAsync();
         }
@@ -121,7 +97,24 @@ namespace Nop.Plugin.Shipping.EcLogistics
         /// </returns>
         public async Task<GetShippingOptionResponse> GetShippingOptionsAsync(GetShippingOptionRequest getShippingOptionRequest)
         {
-            return new GetShippingOptionResponse();
+            var model = await _ecPayCvsShippingMethodRepository.GetAllAsync(x =>
+                x.Where(sm => sm.Name.Equals("UNIMART")));
+            var shippingOption = model.FirstOrDefault();
+
+            var options = new GetShippingOptionResponse() { ShippingOptions = new List<ShippingOption>() };
+
+            var option = new ShippingOption()
+            {
+                ShippingRateComputationMethodSystemName = PluginDescriptor.SystemName,
+                Rate = shippingOption.Fee,
+                Name = await _localizationService.GetResourceAsync("Plugins.Shipping.EcLogisticsUnimart.Name"),
+                Description = shippingOption.Description,
+                TransitDays = shippingOption.TransitDay,
+                IsPickupInStore = false
+            };
+            options.ShippingOptions.Add(option);
+
+            return options;
         }
 
         /// <summary>

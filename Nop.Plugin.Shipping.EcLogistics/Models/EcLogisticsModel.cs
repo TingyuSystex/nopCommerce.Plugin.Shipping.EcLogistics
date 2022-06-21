@@ -7,16 +7,6 @@ namespace Nop.Plugin.Shipping.EcLogistics.Models
 {
     public record EcLogisticsModel : BaseNopModel
     {
-        #region Ctor
-
-        public EcLogisticsModel()
-        {
-            //LogisticsSubTypes = new List<string>();
-            //AvailableLogisticsSubTypes = new List<SelectListItem>();
-        }
-
-        #endregion
-
         #region Properties
         
         [NopResourceDisplayName("Plugins.Shipping.EcLogistics.Fields.MerchantId")]
@@ -30,8 +20,6 @@ namespace Nop.Plugin.Shipping.EcLogistics.Models
 
         [NopResourceDisplayName("Plugins.Shipping.EcLogistics.Fields.PlatformId")]
         public string? PlatformId { get; set; }
-
-
 
         #endregion
     }

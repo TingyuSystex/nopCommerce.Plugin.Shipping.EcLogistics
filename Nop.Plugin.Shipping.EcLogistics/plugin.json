@@ -4,7 +4,7 @@
   "SystemName": "Shipping.EcLogistics",
   "Version": "1.00",
   "SupportedVersions": [ "4.50" ],
-  "Author": "Tingyu Jiang",
+  "Author": "SYSTEX",
   "DisplayOrder": 1,
   "FileName": "Nop.Plugin.Shipping.EcLogistics.dll",
   "Description": "This plugin offers shipping options by EC logistics."
