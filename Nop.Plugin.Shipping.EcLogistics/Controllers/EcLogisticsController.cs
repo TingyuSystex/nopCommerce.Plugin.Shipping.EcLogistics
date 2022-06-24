@@ -15,6 +15,7 @@ using Nop.Core.Domain.Shipping;
 using Nop.Data;
 using Nop.Plugin.Shipping.EcLogistics.Domain;
 using Nop.Plugin.Shipping.EcLogistics.Models;
+using Nop.Plugin.Shipping.EcLogistics.Services;
 using Nop.Services.Common;
 using Nop.Services.Configuration;
 using Nop.Services.Customers;
@@ -53,6 +54,7 @@ namespace Nop.Plugin.Shipping.EcLogistics.Controllers
         private readonly IRepository<EcPayCvsShippingMethod> _ecPayCvsShippingMethodRepository;
         private readonly IPaymentPluginManager _paymentPluginManager;
         private readonly IShoppingCartService _shoppingCartService;
+        private readonly EcLogisticsService _ecLogisticsService;
 
         #endregion
 
@@ -72,7 +74,8 @@ namespace Nop.Plugin.Shipping.EcLogistics.Controllers
             IRepository<Address> addressRepository,
             IRepository<EcPayCvsShippingMethod> ecPayCvsShippingMethodRepository,
             IPaymentPluginManager paymentPluginManager,
-            IShoppingCartService shoppingCartService
+            IShoppingCartService shoppingCartService,
+            EcLogisticsService ecLogisticsService
         )
         {
             //_service = service;
@@ -89,6 +92,7 @@ namespace Nop.Plugin.Shipping.EcLogistics.Controllers
             _ecPayCvsShippingMethodRepository = ecPayCvsShippingMethodRepository;
             _paymentPluginManager = paymentPluginManager;
             _shoppingCartService = shoppingCartService;
+            _ecLogisticsService = ecLogisticsService;
         }
 
         #endregion
@@ -399,36 +403,36 @@ namespace Nop.Plugin.Shipping.EcLogistics.Controllers
         //}
 
 
-        //[HttpPost]
-        //public async Task<IActionResult> GetCvs()
-        //{
-        //    var customer = await _workContext.GetCurrentCustomerAsync();
-        //    var store = await _storeContext.GetCurrentStoreAsync();
-        //    var shippingMethod = _genericAttributeService.GetAttributeAsync<ShippingOption>(customer, NopCustomerDefaults.SelectedShippingOptionAttribute, store.Id).Result;
-        //    var paymentMethod = _genericAttributeService.GetAttributeAsync<string>(customer, NopCustomerDefaults.SelectedPaymentMethodAttribute, store.Id).Result;
+        [HttpPost]
+        public async Task<IActionResult> GetCvs()
+        {
+            var customer = await _workContext.GetCurrentCustomerAsync();
+            var store = await _storeContext.GetCurrentStoreAsync();
+            var shippingMethod = _genericAttributeService.GetAttributeAsync<ShippingOption>(customer, NopCustomerDefaults.SelectedShippingOptionAttribute, store.Id).Result;
+            var paymentMethod = _genericAttributeService.GetAttributeAsync<string>(customer, NopCustomerDefaults.SelectedPaymentMethodAttribute, store.Id).Result;
 
-        //    var ecLogisticsSettings = await _settingService.LoadSettingAsync<EcLogisticsSettings>();
+            var ecLogisticsSettings = await _settingService.LoadSettingAsync<EcLogisticsSettings>();
 
-        //    var merchantId = ecLogisticsSettings.MerchantId;
-        //    var cvsSubType = "";
-        //    var isCollection = "N";
+            var merchantId = ecLogisticsSettings.MerchantId;
+            var cvsSubType = "UNIMART";
+            var isCollection = "N";
 
-        //    if (shippingMethod.Name == ecLogisticsSettings.UniMartName)
-        //        cvsSubType = ecLogisticsSettings.UniMartSubTypeCode;
-        //    if (shippingMethod.Name == ecLogisticsSettings.FamiName)
-        //        cvsSubType = ecLogisticsSettings.FamiSubTypeCode;
-        //    if (shippingMethod.Name == ecLogisticsSettings.HiLifeName)
-        //        cvsSubType = ecLogisticsSettings.HiLifeSubTypeCode;
+            //if (shippingMethod.Name == ecLogisticsSettings.UniMartName)
+            //    cvsSubType = ecLogisticsSettings.UniMartSubTypeCode;
+            //if (shippingMethod.Name == ecLogisticsSettings.FamiName)
+            //    cvsSubType = ecLogisticsSettings.FamiSubTypeCode;
+            //if (shippingMethod.Name == ecLogisticsSettings.HiLifeName)
+            //    cvsSubType = ecLogisticsSettings.HiLifeSubTypeCode;
 
-        //    if (paymentMethod == "Payments.PayInStore")
-        //        isCollection = "Y";
+            if (paymentMethod == "Payments.PayInStore")
+                isCollection = "Y";
 
-        //    var mapUrl = $"https://logistics-stage.ecpay.com.tw/Express/map?IsCollection={isCollection}" +
-        //        $"&LogisticsSubType={cvsSubType}&LogisticsType=CVS&MerchantID={merchantId}" +
-        //        $"&ServerReplyURL=https://localhost:44369/EcLogistics/CvsResponse/";
+            var mapUrl = $"https://logistics-stage.ecpay.com.tw/Express/map?IsCollection={isCollection}" +
+                $"&LogisticsSubType={cvsSubType}&LogisticsType=CVS&MerchantID={merchantId}" +
+                $"&ServerReplyURL=https://localhost:44369/EcLogistics/CvsResponse/";
 
-        //    return Json(new { mapUrl = mapUrl });
-        //}
+            return Json(new { mapUrl = mapUrl });
+        }
 
         #endregion
 
@@ -473,6 +477,18 @@ namespace Nop.Plugin.Shipping.EcLogistics.Controllers
             ViewBag.storeName = response["CVSStoreName"] + " - " + response["CVSAddress"];
 
             return View("~/Plugins/Shipping.EcLogistics/Views/CvsResponse.cshtml");
+        }
+
+        [AutoValidateAntiforgeryToken]
+        [AuthorizeAdmin]
+        [Area(AreaNames.Admin)]
+        [HttpGet]
+        [Route("~/Admin/EcLogistics/SendTest/{subType}")]
+        public async Task<IActionResult> SendTest(string subType)
+        {
+            var result = await _ecLogisticsService.SendTestRequestAsync(subType.ToUpper());
+
+            return Json(new { status = result });
         }
 
         #endregion

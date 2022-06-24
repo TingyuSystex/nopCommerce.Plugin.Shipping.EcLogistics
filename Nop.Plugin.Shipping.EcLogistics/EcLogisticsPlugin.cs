@@ -49,6 +49,7 @@ namespace Nop.Plugin.Shipping.EcLogistics
             //locales
             await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
             {
+                ["Plugins.Shipping.EcLogistics.Configuration.Title"] = "綠界物流整合API",
                 ["Plugins.Shipping.EcLogistics.Configuration.Instructions"] = @"
                     <p>
 	                    註冊綠界會員（<a href=""https://member.ecpay.com.tw/MemberReg/MemberRegister?back=N"" target=""_blank"">
@@ -57,6 +58,36 @@ namespace Nop.Plugin.Shipping.EcLogistics
                         廠商後台：<a href=""https://vendor.ecpay.com.tw/"" target=""_blank"">https://vendor.ecpay.com.tw/</a> <br />
 	                    <br />
                     </p>",
+                ["Plugins.Shipping.EcLogistics.Configuration.CreateTestData"] = "測試標籤資料產生",
+                ["Plugins.Shipping.EcLogistics.Configuration.CreateTestData.Instructions"] = @"
+                    <span>
+                        申請全家及7-ELEVEN超商B2C物流的廠商， <b>需要測標通過後才可建立B2C物流訂單</b><br/>
+                        產生的測試標籤所需要的測試訂單資訊可於<a href=""https://vendor.ecpay.com.tw/"" target=""_blank"">廠商管理後台</a>列印 <br />
+                        注意事項：
+                    </span>
+                        <ol>
+                          <li>請務必使用雷射印表機列印標籤，並用「信封袋寄送至各物流中心進行標籤刷讀，如不符合標準，日後出貨商品不予驗收，以退貨處理。以下地址僅供測標寄送
+                            <ul>
+                              <li>全家標籤寄送地址：335桃園市大溪區新光東路76巷22-2號。日翊文化電子商務部-EC測標收。</li>
+                              <li>7-ELEVEN標籤寄送地址：238新北市樹林區佳園路二段70-1號。大智通文化行銷-EC驗收組收。</li>
+                              <li>7-ELEVEN B2C冷凍店取標籤寄送地址：303新竹縣湖口鄉八德路三段30之1號。統昶物流中心-EC冷凍店取測標收。</li>
+                            </ul>
+                          </li>
+                          <li>7-ELEVEN訂單測標資料建立後，請於D+5日14:00前列印，超過便無法列印</li>
+                          <li>全家訂單建立後，請於6日內列印，超過便無法列印</li>
+                          <li>測標結果查詢：
+                            <ul>
+                              <li>全家：測標結果請務必點擊「廠商管理後台」 → 物流管理 → 對帳查詢【 一段標查詢 】，查詢按鈕後，若測標成功，方可正常建立訂單。</li>
+                              <li>7-ELEVEN：測標結果由綠界科技客服通知，可在「廠商管理後台」 → 廠商專區 → 廠商基本資料 → 物流資訊 → 測標結果查詢， 若測標成功，方可正常建立訂單 。</li>
+                            </ul>
+                          </li>
+                        </ol>
+                        需先儲存上方API欄位資訊後再進行測試 <br /><br />",
+
+                ["Plugins.Shipping.EcLogistics.Configuration.Test"] = "產生測試標籤",
+                ["Plugins.Shipping.EcLogistics.Configuration.Test.Unimart"] = "7-ELEVEN",
+                ["Plugins.Shipping.EcLogistics.Configuration.Test.UnimartFreeze"] = "7-ELEVEN冷凍店取",
+                ["Plugins.Shipping.EcLogistics.Configuration.Test.Fami"] = "全家",
 
                 ["Plugins.Shipping.EcLogistics.Fields.MerchantId"] = "MerchantID",
                 ["Plugins.Shipping.EcLogistics.Fields.MerchantId.Hint"] = "輸入廠商(會員)編號",
@@ -91,7 +122,7 @@ namespace Nop.Plugin.Shipping.EcLogistics
                 ["Plugins.Shipping.EcLogistics.Fields.Fee"] = "運費",
                 ["Plugins.Shipping.EcLogistics.Fields.Fee.Hint"] = "配送運費",
                 ["Plugins.Shipping.EcLogistics.Fields.TransitDay"] = "配送天數",
-                ["Plugins.Shipping.EcLogistics.Fields.TransitDay.Hint"] = "配送所需天數",
+                ["Plugins.Shipping.EcLogistics.Fields.TransitDay.Hint"] = "配送所需天數，0表示結帳不顯示",
                 ["Plugins.Shipping.EcLogistics.Fields.Description.Required"] = "配送方法描述必填",
                 ["Plugins.Shipping.EcLogistics.Fields.Description.LengthError"] = "配送方法描述長度需小於100",
             });

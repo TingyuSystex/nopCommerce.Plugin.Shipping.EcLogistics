@@ -14,7 +14,7 @@
     <div class="cards-group">
         <div class="card card-default">
             <div class="card-header">
-                綠界物流整合API
+                @T("Plugins.Shipping.EcLogistics.Configuration.Title")
             </div>
             <div class="card-body">
                 @Html.Raw(T("Plugins.Shipping.EcLogistics.Configuration.Instructions"))
@@ -24,7 +24,7 @@
                         <nop-label asp-for="MerchantId" />
                     </div>
                     <div class="col-md-9">
-                        <nop-editor asp-for="MerchantId" asp-required="true"/>
+                        <nop-editor asp-for="MerchantId" asp-required="true" />
                         <span asp-validation-for="MerchantId"></span>
                     </div>
                 </div>
@@ -33,7 +33,7 @@
                         <nop-label asp-for="HashKey" />
                     </div>
                     <div class="col-md-9">
-                        <nop-editor asp-for="HashKey" asp-required="true"/>
+                        <nop-editor asp-for="HashKey" asp-required="true" />
                         <span asp-validation-for="HashKey"></span>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                         <nop-label asp-for="HashIV" />
                     </div>
                     <div class="col-md-9">
-                        <nop-editor asp-for="HashIV" asp-required="true"/>
+                        <nop-editor asp-for="HashIV" asp-required="true" />
                         <span asp-validation-for="HashIV"></span>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                         <span asp-validation-for="PlatformId"></span>
                     </div>
                 </div>
-                
+
                 <div class="form-group row">
                     <div class="col-md-9 offset-md-3">
                         <button type="submit" name="save" class="btn btn-primary">@T("Admin.Common.Save")</button>
@@ -64,64 +64,80 @@
             </div>
         </div>
 
-        @*<div class="card card-default">
+        <div class="card card-default">
             <div class="card-header">
-                送貨方法
+                @T("Plugins.Shipping.EcLogistics.Configuration.CreateTestData")
             </div>
             <div class="card-body">
-                <div id="ecl-shipping-methods-area">
-                    @await Html.PartialAsync("Table", new DataTablesModel
-                    {
-                        Name = "eclshippingmethods-grid",
-                        RowIdBasedOnField = nameof(EclShippingMethodsModel.Name),
-                        UrlRead = new DataUrl("GetShippingMethods", "EcLogistics", null),
-                        UrlUpdate = new DataUrl("UpdateShippingMethods", "EcLogistics", null),
-                        Paging = false,
-                        RefreshButton = false,
-                        ColumnCollection = new List<ColumnProperty>
-                        {
-                            new ColumnProperty(nameof(EclShippingMethodsModel.Name))
-                            {
-                                Title = T("Plugins.Shipping.EcLogistics.ShippingMethod.Name").Text,
-                                Width = "300"
-                            },
-                            new ColumnProperty(nameof(EclShippingMethodsModel.Description))
-                            {
-                                Title = T("Plugins.Shipping.EcLogistics.ShippingMethod.Description").Text,
-                                Width = "400"
-                            },
-                            new ColumnProperty(nameof(EclShippingMethodsModel.Rate))
-                            {
-                                Title = T("Plugins.Shipping.EcLogistics.ShippingMethod.Rate").Text,
-                                Width = "100",
-                                ClassName = NopColumnClassDefaults.CenterAll
-                            },
-                            new ColumnProperty(nameof(EclShippingMethodsModel.DisplayOrder))
-                            {
-                                Title = T("Plugins.Shipping.EcLogistics.ShippingMethod.DisplayOrder").Text,
-                                Width = "150",
-                                ClassName = NopColumnClassDefaults.CenterAll
-                            },
-                            new ColumnProperty(nameof(EclShippingMethodsModel.IsActive))
-                            {
-                                Title = T("Plugins.Shipping.EcLogistics.ShippingMethod.IsActive").Text,
-                                Width = "100",
-                                ClassName = NopColumnClassDefaults.CenterAll,
-                                Render = new RenderBoolean()
-                            },
-                            new ColumnProperty(nameof(EclShippingMethodsModel.SubTypeCode))
-                            {
-                                Title = T("Admin.Common.Edit").Text,
-                                Width = "200",
-                                ClassName =  NopColumnClassDefaults.Button,
-                                Render = new RenderButtonEdit(new DataUrl("EditSubType"))
-                            }
-                        }
-                    })
-                </div>
+                @Html.Raw(T("Plugins.Shipping.EcLogistics.Configuration.CreateTestData.Instructions"))
 
+                <div class="form-group row">
+                    <div class="col-md-3" style="text-align: right;">
+                        <label class="col-form-label">@T("Plugins.Shipping.EcLogistics.Configuration.Test.Unimart")</label>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" onclick="send_test('unimart')" class="btn btn-primary">@T("Plugins.Shipping.EcLogistics.Configuration.Test")</button>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="col-form-label" id="unimartStatus" hidden="true" style=""></label>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3" style="text-align: right;">
+                        <label class="col-form-label">@T("Plugins.Shipping.EcLogistics.Configuration.Test.UnimartFreeze")</label>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" onclick="send_test('unimartfreeze')" class="btn btn-primary">@T("Plugins.Shipping.EcLogistics.Configuration.Test")</button>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="col-form-label" id="unimartfreezeStatus" hidden="true"></label>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3" style="text-align: right;">
+                        <label class="col-form-label">@T("Plugins.Shipping.EcLogistics.Configuration.Test.Fami")</label>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" onclick="send_test('fami')" class="btn btn-primary">@T("Plugins.Shipping.EcLogistics.Configuration.Test")</button>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="col-form-label" id="famiStatus" hidden="true"></label>
+                    </div>
+                </div>
             </div>
-        </div>*@
-        
+        </div>
+
     </div>
 </form>
+
+<script asp-location="Footer">
+
+    function send_test(subType) {
+        var result = null;
+        $.ajax({
+            cache: false,
+            type: "GET",
+            url: window.location.origin + "/Admin/EcLogistics/SendTest/"+ subType,
+            async: false,
+            //data:{ subType: subType},
+            success: function (data) {
+                if (data) {
+                    result = data.status;
+                } else {
+                    display_nop_error(data);
+                }
+            }
+        });
+        console.log(result);
+        showStatus(subType, result);
+        return true;
+    }
+
+    function showStatus(subType, status) {
+        var el = $('#' + subType + "Status");
+        el.removeAttr('hidden');
+        el.text(status ? "Success" : "Error");
+        el.css('color', status ? "green" : "red");
+    }
+
+</script>
