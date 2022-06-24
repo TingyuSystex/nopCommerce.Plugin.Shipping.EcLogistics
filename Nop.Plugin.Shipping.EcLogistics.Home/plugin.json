@@ -1,0 +1,12 @@
+﻿{
+  "Group": "Shipping rate computation",
+  "FriendlyName": "綠界物流 宅配",
+  "SystemName": "Shipping.EcLogistics.Home",
+  "Version": "1.00",
+  "SupportedVersions": [ "4.50" ],
+  "Author": "SYSTEX",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Shipping.EcLogistics.Home.dll",
+  "Description": "綠界物流 宅配",
+  "DependsOnSystemNames": [ "Shipping.EcLogistics" ]
+}
