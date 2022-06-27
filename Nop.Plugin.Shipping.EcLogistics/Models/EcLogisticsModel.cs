@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Nop.Web.Framework.Models;
+﻿using Nop.Web.Framework.Models;
 using Nop.Web.Framework.Mvc.ModelBinding;
 
 namespace Nop.Plugin.Shipping.EcLogistics.Models
@@ -8,7 +6,10 @@ namespace Nop.Plugin.Shipping.EcLogistics.Models
     public record EcLogisticsModel : BaseNopModel
     {
         #region Properties
-        
+
+        [NopResourceDisplayName("Plugins.Shipping.EcLogistics.Fields.UseSandbox")]
+        public bool UseSandbox { get; set; }
+
         [NopResourceDisplayName("Plugins.Shipping.EcLogistics.Fields.MerchantId")]
         public string MerchantId { get; set; }
 

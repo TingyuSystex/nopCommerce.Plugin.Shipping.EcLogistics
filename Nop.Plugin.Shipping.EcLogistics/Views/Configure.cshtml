@@ -21,6 +21,15 @@
 
                 <div class="form-group row">
                     <div class="col-md-3">
+                        <nop-label asp-for="UseSandbox" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="UseSandbox" asp-required="false" />
+                        <span asp-validation-for="UseSandbox"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
                         <nop-label asp-for="MerchantId" />
                     </div>
                     <div class="col-md-9">
@@ -55,7 +64,7 @@
                         <span asp-validation-for="PlatformId"></span>
                     </div>
                 </div>
-
+                
                 <div class="form-group row">
                     <div class="col-md-9 offset-md-3">
                         <button type="submit" name="save" class="btn btn-primary">@T("Admin.Common.Save")</button>
@@ -69,7 +78,7 @@
                 @T("Plugins.Shipping.EcLogistics.Configuration.CreateTestData")
             </div>
             <div class="card-body">
-                @Html.Raw(T("Plugins.Shipping.EcLogistics.Configuration.CreateTestData.Instructions"))
+                 @Html.Raw(T("Plugins.Shipping.EcLogistics.Configuration.CreateTestData.Instructions"))
 
                 <div class="form-group row">
                     <div class="col-md-3" style="text-align: right;">
@@ -101,17 +110,16 @@
                         <button type="button" onclick="send_test('fami')" class="btn btn-primary">@T("Plugins.Shipping.EcLogistics.Configuration.Test")</button>
                     </div>
                     <div class="col-md-3">
-                        <label class="col-form-label" id="famiStatus" hidden="true"></label>
+                        <label class="col-form-label" id="famiStatus" hidden></label>
                     </div>
                 </div>
             </div>
         </div>
-
+        
     </div>
 </form>
 
 <script asp-location="Footer">
-
     function send_test(subType) {
         var result = null;
         $.ajax({
@@ -132,12 +140,10 @@
         showStatus(subType, result);
         return true;
     }
-
     function showStatus(subType, status) {
         var el = $('#' + subType + "Status");
         el.removeAttr('hidden');
         el.text(status ? "Success" : "Error");
         el.css('color', status ? "green" : "red");
     }
-
-</script>
+</script> 

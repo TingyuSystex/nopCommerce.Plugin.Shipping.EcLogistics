@@ -7,6 +7,8 @@ namespace Nop.Plugin.Shipping.EcLogistics
     /// </summary>
     public class EcLogisticsSettings : ISettings
     {
+        public bool UseSandbox { get; set; }
+
         public string MerchantId { get; set; }
 
         public string HashKey { get; set; }

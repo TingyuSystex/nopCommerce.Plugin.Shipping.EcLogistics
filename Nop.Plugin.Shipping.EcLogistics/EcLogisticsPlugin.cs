@@ -1,37 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nop.Core;
-using Nop.Core.Domain.Shipping;
-using Nop.Services.Common;
-using Nop.Services.Configuration;
+using Nop.Services.Cms;
 using Nop.Services.Localization;
 using Nop.Services.Plugins;
-using Nop.Services.Shipping;
-using Nop.Services.Shipping.Tracking;
 
 namespace Nop.Plugin.Shipping.EcLogistics
 {
-    public class EcLogisticsPlugin : BasePlugin, IShippingRateComputationMethod
+    public class EcLogisticsPlugin : BasePlugin, IWidgetPlugin
     {
         #region Fields
 
         private readonly ILocalizationService _localizationService;
-        private readonly ISettingService _settingService;
         private readonly IWebHelper _webHelper;
+
+        public bool HideInWidgetList => false;
 
         #endregion
 
         #region Ctor
 
         public EcLogisticsPlugin(ILocalizationService localizationService,
-            ISettingService settingService,
             IWebHelper webHelper)
         {
             _localizationService = localizationService;
-            _settingService = settingService;
             _webHelper = webHelper;
         }
 
@@ -58,6 +50,7 @@ namespace Nop.Plugin.Shipping.EcLogistics
                         廠商後台：<a href=""https://vendor.ecpay.com.tw/"" target=""_blank"">https://vendor.ecpay.com.tw/</a> <br />
 	                    <br />
                     </p>",
+
                 ["Plugins.Shipping.EcLogistics.Configuration.CreateTestData"] = "測試標籤資料產生",
                 ["Plugins.Shipping.EcLogistics.Configuration.CreateTestData.Instructions"] = @"
                     <span>
@@ -89,6 +82,7 @@ namespace Nop.Plugin.Shipping.EcLogistics
                 ["Plugins.Shipping.EcLogistics.Configuration.Test.UnimartFreeze"] = "7-ELEVEN冷凍店取",
                 ["Plugins.Shipping.EcLogistics.Configuration.Test.Fami"] = "全家",
 
+                ["Plugins.Shipping.EcLogistics.Fields.UseSandbox"] = "使用測試環境",
                 ["Plugins.Shipping.EcLogistics.Fields.MerchantId"] = "MerchantID",
                 ["Plugins.Shipping.EcLogistics.Fields.MerchantId.Hint"] = "輸入廠商(會員)編號",
                 ["Plugins.Shipping.EcLogistics.Fields.HashKey"] = "HashKey",
@@ -115,16 +109,20 @@ namespace Nop.Plugin.Shipping.EcLogistics
                 ["Plugins.Shipping.EcLogistics.Fields.TemperatureType.L"] = "低溫",
                 ["Plugins.Shipping.EcLogistics.Fields.LengthLimit"] = "單邊長度限制",
                 ["Plugins.Shipping.EcLogistics.Fields.LengthLimit.Hint"] = "單邊長度最長限制(cm)",
-                ["Plugins.Shipping.EcLogistics.Fields.SizeLimit"] = "重量限制",
-                ["Plugins.Shipping.EcLogistics.Fields.SizeLimit.Hint"] = "重量限制(kg)",
-                ["Plugins.Shipping.EcLogistics.Fields.WeightSizeLimit"] = "材積(長+寬+高)",
-                ["Plugins.Shipping.EcLogistics.Fields.WeightSizeLimit.Hint"] = "長+寬+高(cm)",
+                ["Plugins.Shipping.EcLogistics.Fields.SizeLimit"] = "材積(長+寬+高)",
+                ["Plugins.Shipping.EcLogistics.Fields.SizeLimit.Hint"] = "長+寬+高(cm)",
+                ["Plugins.Shipping.EcLogistics.Fields.WeightSizeLimit"] = "重量限制",
+                ["Plugins.Shipping.EcLogistics.Fields.WeightSizeLimit.Hint"] = "重量限制(kg)",
                 ["Plugins.Shipping.EcLogistics.Fields.Fee"] = "運費",
                 ["Plugins.Shipping.EcLogistics.Fields.Fee.Hint"] = "配送運費",
                 ["Plugins.Shipping.EcLogistics.Fields.TransitDay"] = "配送天數",
                 ["Plugins.Shipping.EcLogistics.Fields.TransitDay.Hint"] = "配送所需天數，0表示結帳不顯示",
                 ["Plugins.Shipping.EcLogistics.Fields.Description.Required"] = "配送方法描述必填",
                 ["Plugins.Shipping.EcLogistics.Fields.Description.LengthError"] = "配送方法描述長度需小於100",
+
+                ["Plugins.Shipping.EcLogistics.SelectCvsStore"] = "選擇超商門市",
+                ["Plugins.Shipping.EcLogistics.SelectOther"] = "選擇其他超商門市",
+                ["Plugins.Shipping.EcLogistics.SelectStore"] = "選擇門市"
             });
 
             await base.InstallAsync();
@@ -140,157 +138,30 @@ namespace Nop.Plugin.Shipping.EcLogistics
 
         #endregion
 
-        #region Shipping Provider
+        #region Widget
 
         /// <summary>
-        ///  Gets available shipping options
+        /// Gets a name of a view component for displaying widget
         /// </summary>
-        /// <param name="getShippingOptionRequest">A request for getting shipping options</param>
-        /// <returns>
-        /// A task that represents the asynchronous operation
-        /// The task result contains the represents a response of getting shipping rate options
-        /// </returns>
-        public async Task<GetShippingOptionResponse> GetShippingOptionsAsync(GetShippingOptionRequest getShippingOptionRequest)
+        /// <param name="widgetZone">Name of the widget zone</param>
+        /// <returns>View component name</returns>
+        public string GetWidgetViewComponentName(string widgetZone)
         {
-            return new GetShippingOptionResponse();
+            return "EcLogistics";
         }
 
         /// <summary>
-        /// Gets fixed shipping rate (if shipping rate computation method allows it and the rate can be calculated before checkout).
-        /// </summary>
-        /// <param name="getShippingOptionRequest">A request for getting shipping options</param>
-        /// <returns>
-        /// A task that represents the asynchronous operation
-        /// The task result contains the fixed shipping rate; or null in case there's no fixed shipping rate
-        /// </returns>
-        public Task<decimal?> GetFixedRateAsync(GetShippingOptionRequest getShippingOptionRequest)
-        {
-            return Task.FromResult<decimal?>(null);
-        }
-
-        /// <summary>
-        /// Get associated shipment tracker
+        /// Gets widget zones where this widget should be rendered
         /// </summary>
         /// <returns>
         /// A task that represents the asynchronous operation
-        /// The task result contains the shipment tracker
+        /// The task result contains the widget zones
         /// </returns>
-        public Task<IShipmentTracker> GetShipmentTrackerAsync()
+        public Task<IList<string>> GetWidgetZonesAsync()
         {
-            return Task.FromResult<IShipmentTracker>(null);
+            return Task.FromResult<IList<string>>(new List<string> { "checkout_shipping_address_cvs" });
         }
 
         #endregion
-
-        //#region Shipping Provider
-
-        ///// <summary>
-        /////  Gets available shipping options
-        ///// </summary>
-        ///// <param name="getShippingOptionRequest">A request for getting shipping options</param>
-        ///// <returns>
-        ///// A task that represents the asynchronous operation
-        ///// The task result contains the represents a response of getting shipping rate options
-        ///// </returns>
-        //public async Task<GetShippingOptionResponse> GetShippingOptionsAsync(GetShippingOptionRequest getShippingOptionRequest)
-        //{
-        //    if (getShippingOptionRequest == null)
-        //        throw new ArgumentNullException(nameof(getShippingOptionRequest));
-
-        //    if (!getShippingOptionRequest.Items?.Any() ?? true)
-        //        return new GetShippingOptionResponse { Errors = new[] { "No shipment items" } };
-
-        //    if (getShippingOptionRequest.ShippingAddress?.CountryId == null)
-        //        return new GetShippingOptionResponse { Errors = new[] { "Shipping address is not set" } };
-
-        //    var ecLogisticsSettings = await _settingService.LoadSettingAsync<EcLogisticsSettings>();
-        //    var response = new GetShippingOptionResponse();
-
-        //    if (ecLogisticsSettings.UniMartIsActive)
-        //        response.ShippingOptions.Add(new ShippingOption()
-        //        {
-        //            Name = ecLogisticsSettings.UniMartName,
-        //            Description = ecLogisticsSettings.UniMartDescription,
-        //            Rate = ecLogisticsSettings.UniMartRate,
-        //            DisplayOrder = ecLogisticsSettings.UniMartDisplayOrder
-        //        });
-        //    if (ecLogisticsSettings.FamiIsActive)
-        //        response.ShippingOptions.Add(new ShippingOption()
-        //        {
-        //            Name = ecLogisticsSettings.FamiName,
-        //            Description = ecLogisticsSettings.FamiDescription,
-        //            Rate = ecLogisticsSettings.FamiRate,
-        //            DisplayOrder = ecLogisticsSettings.FamiDisplayOrder
-        //        });
-        //    if (ecLogisticsSettings.HiLifeIsActive)
-        //        response.ShippingOptions.Add(new ShippingOption()
-        //        {
-        //            Name = ecLogisticsSettings.HiLifeName,
-        //            Description = ecLogisticsSettings.HiLifeDescription,
-        //            Rate = ecLogisticsSettings.HiLifeRate,
-        //            DisplayOrder = ecLogisticsSettings.HiLifeDisplayOrder
-        //        });
-        //    if (ecLogisticsSettings.UniMartFreezeIsActive)
-        //        response.ShippingOptions.Add(new ShippingOption()
-        //        {
-        //            Name = ecLogisticsSettings.UniMartFreezeName,
-        //            Description = ecLogisticsSettings.UniMartFreezeDescription,
-        //            Rate = ecLogisticsSettings.UniMartFreezeRate,
-        //            DisplayOrder = ecLogisticsSettings.UniMartFreezeDisplayOrder
-        //        });
-        //    //if (ecLogisticsSettings.TcatIsActive)
-        //    //    response.ShippingOptions.Add(new ShippingOption()
-        //    //    {
-        //    //        Name = ecLogisticsSettings.TcatName,
-        //    //        Description = ecLogisticsSettings.TcatDescription,
-        //    //        Rate = ecLogisticsSettings.TcatRate,
-        //    //        DisplayOrder = ecLogisticsSettings.TcatDisplayOrder
-        //    //    });
-        //    //if (ecLogisticsSettings.EcanIsActive)
-        //    //    response.ShippingOptions.Add(new ShippingOption()
-        //    //    {
-        //    //        Name = ecLogisticsSettings.EcanName,
-        //    //        Description = ecLogisticsSettings.EcanDescription,
-        //    //        Rate = ecLogisticsSettings.EcanRate,
-        //    //        DisplayOrder = ecLogisticsSettings.EcanDisplayOrder
-        //    //    });
-        //    if (ecLogisticsSettings.HomeIsActive)
-        //        response.ShippingOptions.Add(new ShippingOption()
-        //        {
-        //            Name = ecLogisticsSettings.HomeName,
-        //            Description = ecLogisticsSettings.HomeDescription,
-        //            Rate = ecLogisticsSettings.HomeRate,
-        //            DisplayOrder = ecLogisticsSettings.HomeDisplayOrder
-        //        });
-
-        //    return response;
-        //}
-
-        ///// <summary>
-        ///// Gets fixed shipping rate (if shipping rate computation method allows it and the rate can be calculated before checkout).
-        ///// </summary>
-        ///// <param name="getShippingOptionRequest">A request for getting shipping options</param>
-        ///// <returns>
-        ///// A task that represents the asynchronous operation
-        ///// The task result contains the fixed shipping rate; or null in case there's no fixed shipping rate
-        ///// </returns>
-        //public Task<decimal?> GetFixedRateAsync(GetShippingOptionRequest getShippingOptionRequest)
-        //{
-        //    return Task.FromResult<decimal?>(null);
-        //}
-
-        ///// <summary>
-        ///// Get associated shipment tracker
-        ///// </summary>
-        ///// <returns>
-        ///// A task that represents the asynchronous operation
-        ///// The task result contains the shipment tracker
-        ///// </returns>
-        //public Task<IShipmentTracker> GetShipmentTrackerAsync()
-        //{
-        //    return Task.FromResult<IShipmentTracker>(null);
-        //}
-
-        //#endregion
     }
 }

@@ -42,6 +42,35 @@ namespace Nop.Plugin.Shipping.EcLogistics.UnimartFreeze
 
         #endregion
 
+        #region Utilities
+
+        /// <summary>
+        /// 檢查是否符合配送條件
+        /// 紙箱三邊外尺寸不可大於30x30x45公分，
+        /// 重量不可超過10公斤
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private bool CheckShippingLimit(EcPayCvsShippingMethod method, GetShippingOptionRequest request)
+        {
+            var items = request.Items.Where(x => x.Product.IsShipEnabled && !x.Product.IsFreeShipping && !x.Product.ShipSeparately);
+            decimal totalWeight = 0;
+            foreach (var item in items)
+            {
+                totalWeight += item.Product.Weight * Convert.ToDecimal(item.ShoppingCartItem.Quantity);
+            }
+
+            if (method.WeightSizeLimit > 0 && method.WeightSizeLimit < totalWeight)
+                return false;
+
+            // TODO: 紙箱三邊外尺寸不可大於30x30x45公分，
+
+            return true;
+        }
+
+        #endregion
+
         #region BasePlugin
 
         public override string GetConfigurationPageUrl()
@@ -103,16 +132,21 @@ namespace Nop.Plugin.Shipping.EcLogistics.UnimartFreeze
 
             var options = new GetShippingOptionResponse() { ShippingOptions = new List<ShippingOption>() };
 
-            var option = new ShippingOption()
+            if (CheckShippingLimit(shippingOption, getShippingOptionRequest))
             {
-                ShippingRateComputationMethodSystemName = PluginDescriptor.SystemName,
-                Rate = shippingOption.Fee,
-                Name = await _localizationService.GetResourceAsync("Plugins.Shipping.EcLogisticsUnimartFreeze.Name"),
-                Description = shippingOption.Description,
-                TransitDays = shippingOption.TransitDay,
-                IsPickupInStore = false
-            };
-            options.ShippingOptions.Add(option);
+                var option = new ShippingOption()
+                {
+                    ShippingRateComputationMethodSystemName = PluginDescriptor.SystemName,
+                    Rate = shippingOption.Fee,
+                    Name = await _localizationService.GetResourceAsync("Plugins.Shipping.EcLogisticsUnimartFreeze.Name"),
+                    Description = shippingOption.Description,
+                    TransitDays = shippingOption.TransitDay,
+                    IsPickupInStore = false,
+                    IsCvsMethod = true,
+                    PaymentMethods = shippingOption.PaymentMethod
+                };
+                options.ShippingOptions.Add(option);
+            }
 
             return options;
         }

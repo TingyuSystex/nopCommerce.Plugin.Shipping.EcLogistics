@@ -84,6 +84,7 @@ namespace Nop.Plugin.Shipping.EcLogistics.Home
                 ["Plugins.Shipping.EcLogisticsHome.Fields.HolidayExtraFee"] = "假日加價",
                 ["Plugins.Shipping.EcLogisticsHome.Fields.HolidayExtraFee.Hint"] = "假日、節日宅配運費本島與離島每件加價費用(例：農曆新年、中秋、端午節及各節前５個工作天取貨的貨品，每件皆須加價10元)",
 
+                ["Plugins.Shipping.EcLogisticsHome.ShippingMethod.Addrecord"] = "新增費用設定",
                 ["Plugins.Shipping.EcLogisticsHome.ShippingMethod.AddTitle"] = "新增宅配運費",
                 ["Plugins.Shipping.EcLogisticsHome.ShippingMethod.EditTitle"] = "編輯宅配運費",
 
@@ -137,7 +138,9 @@ namespace Nop.Plugin.Shipping.EcLogistics.Home
                     Name = await _localizationService.GetResourceAsync("Plugins.Shipping.EcLogisticsHome.Name"),
                     Description = method.Description,
                     TransitDays = method.TransitDay,
-                    IsPickupInStore = false
+                    IsPickupInStore = false,
+                    IsCvsMethod = false,
+                    PaymentMethods = method.PaymentMethod
                 };
                 result.ShippingOptions.Add(option);
 
@@ -149,7 +152,7 @@ namespace Nop.Plugin.Shipping.EcLogistics.Home
             decimal totalSize = 0;
             foreach (var item in items)
             {
-                totalSize += (item.Product.Length + item.Product.Weight + item.Product.Height) * Convert.ToDecimal(item.ShoppingCartItem.Quantity);
+                totalSize += (item.Product.Length + item.Product.Width + item.Product.Height) * Convert.ToDecimal(item.ShoppingCartItem.Quantity);
             }
 
             var feeList = _ecPayHomeShippingFeeRepository.GetAll();
@@ -173,7 +176,9 @@ namespace Nop.Plugin.Shipping.EcLogistics.Home
                         Name = await _localizationService.GetResourceAsync("Plugins.Shipping.EcLogisticsHome.Name"),
                         Description = method.Description,
                         TransitDays = method.TransitDay,
-                        IsPickupInStore = false
+                        IsPickupInStore = false,
+                        IsCvsMethod = false,
+                        PaymentMethods = method.PaymentMethod
                     };
                     result.ShippingOptions.Add(option);
                 }

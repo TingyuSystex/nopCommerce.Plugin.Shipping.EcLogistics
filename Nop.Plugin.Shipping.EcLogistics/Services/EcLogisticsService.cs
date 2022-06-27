@@ -6,11 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Net.Http.Headers;
 using Nop.Core;
-using Nop.Core.Caching;
-using Nop.Services.Media;
-using Nop.Services.Orders;
-using Nop.Services.Stores;
-using Nop.Web.Factories;
 
 namespace Nop.Plugin.Shipping.EcLogistics.Services
 {
@@ -18,37 +13,20 @@ namespace Nop.Plugin.Shipping.EcLogistics.Services
     {
         #region Fields
 
-        private readonly HttpClient _httpClient;
         private readonly EcLogisticsSettings _ecLogisticsSettings;
-        private readonly ICommonModelFactory _commonModelFactory;
-        private readonly IStoreService _storeService;
-        private readonly IStaticCacheManager _staticCacheManager;
-        private readonly IWebHelper _webHelper;
-        private readonly IPictureService _pictureService;
 
         #endregion
 
         #region Ctor
 
         public EcLogisticsService(HttpClient client,
-            EcLogisticsSettings ecLogisticsSettings,
-            ICommonModelFactory commonModelFactory,
-            IStoreService storeService,
-            IStaticCacheManager staticCacheManager,
-            IWebHelper webHelper,
-            IPictureService pictureService)
+            EcLogisticsSettings ecLogisticsSettings)
         {
             //configure client
             client.Timeout = TimeSpan.FromSeconds(25);
             client.DefaultRequestHeaders.Add(HeaderNames.UserAgent, $"nopCommerce-{NopVersion.CURRENT_VERSION}");
 
-            _httpClient = client;
             _ecLogisticsSettings = ecLogisticsSettings;
-            _commonModelFactory = commonModelFactory;
-            _storeService = storeService;
-            _staticCacheManager = staticCacheManager;
-            _webHelper = webHelper;
-            _pictureService = pictureService;
         }
 
         #endregion
@@ -110,11 +88,15 @@ namespace Nop.Plugin.Shipping.EcLogistics.Services
 
         #endregion
 
+        #region Method
+
         public async Task<bool> SendTestRequestAsync(string subType)
         {
             using (var httpClient = new HttpClient())
             {
-                var baseUri = "https://logistics-stage.ecpay.com.tw/Express/CreateTestData";
+                var devUrl = "https://logistics-stage.ecpay.com.tw/Express/CreateTestData";
+                var prodUrl = "https://logistics.ecpay.com.tw/Express/CreateTestData";
+                var baseUri = _ecLogisticsSettings.UseSandbox ? devUrl : prodUrl;
 
                 var merchantId = _ecLogisticsSettings.MerchantId;
                 var hashKey = _ecLogisticsSettings.HashKey;
@@ -141,6 +123,7 @@ namespace Nop.Plugin.Shipping.EcLogistics.Services
                 return httpResponse.IsSuccessStatusCode && int.Parse(result) == 1;
             }
         }
-        
+
+        #endregion
     }
 }

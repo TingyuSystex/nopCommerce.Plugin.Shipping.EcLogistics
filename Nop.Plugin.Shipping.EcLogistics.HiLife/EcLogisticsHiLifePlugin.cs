@@ -42,6 +42,41 @@ namespace Nop.Plugin.Shipping.EcLogistics.HiLife
 
         #endregion
 
+        #region Utilities
+
+        /// <summary>
+        /// 檢查是否符合配送條件
+        /// 1.長寬高總和≦105公分
+        /// 2.單邊最長長度≦45公分
+        /// 3.商品總重量≦5公斤
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private bool CheckShippingLimit(EcPayCvsShippingMethod method, GetShippingOptionRequest request)
+        {
+            var items = request.Items.Where(x => x.Product.IsShipEnabled && !x.Product.IsFreeShipping && !x.Product.ShipSeparately);
+            decimal totalSize = 0;
+            decimal totalWeight = 0;
+            foreach (var item in items)
+            {
+                totalSize += (item.Product.Length + item.Product.Width + item.Product.Height) * Convert.ToDecimal(item.ShoppingCartItem.Quantity);
+                totalWeight += item.Product.Weight * Convert.ToDecimal(item.ShoppingCartItem.Quantity);
+            }
+
+            if (method.SizeLimit > 0 && method.SizeLimit < totalSize)
+                return false;
+
+            if (method.WeightSizeLimit > 0 && method.WeightSizeLimit < totalWeight)
+                return false;
+
+            // TODO: 單邊最長長度≦45公分
+
+            return true;
+        }
+
+        #endregion
+
         #region BasePlugin
 
         public override string GetConfigurationPageUrl()
@@ -103,16 +138,21 @@ namespace Nop.Plugin.Shipping.EcLogistics.HiLife
 
             var options = new GetShippingOptionResponse() { ShippingOptions = new List<ShippingOption>() };
 
-            var option = new ShippingOption()
+            if (CheckShippingLimit(shippingOption, getShippingOptionRequest))
             {
-                ShippingRateComputationMethodSystemName = PluginDescriptor.SystemName,
-                Rate = shippingOption.Fee,
-                Name = await _localizationService.GetResourceAsync("Plugins.Shipping.EcLogisticsHiLife.Name"),
-                Description = shippingOption.Description,
-                TransitDays = shippingOption.TransitDay,
-                IsPickupInStore = false
-            };
-            options.ShippingOptions.Add(option);
+                var option = new ShippingOption()
+                {
+                    ShippingRateComputationMethodSystemName = PluginDescriptor.SystemName,
+                    Rate = shippingOption.Fee,
+                    Name = await _localizationService.GetResourceAsync("Plugins.Shipping.EcLogisticsHiLife.Name"),
+                    Description = shippingOption.Description,
+                    TransitDays = shippingOption.TransitDay,
+                    IsPickupInStore = false,
+                    IsCvsMethod = true,
+                    PaymentMethods = shippingOption.PaymentMethod
+                };
+                options.ShippingOptions.Add(option);
+            }
 
             return options;
         }
