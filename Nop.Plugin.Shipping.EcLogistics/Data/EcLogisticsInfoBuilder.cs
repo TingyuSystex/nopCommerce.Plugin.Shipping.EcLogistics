@@ -13,7 +13,7 @@ namespace Nop.Plugin.Shipping.EcLogistics.Data
                 .WithColumn(nameof(EcPayCvsShippingMethod.Name)).AsString(50).NotNullable().Unique()
                 .WithColumn(nameof(EcPayCvsShippingMethod.Description)).AsString(100).NotNullable()
                 .WithColumn(nameof(EcPayCvsShippingMethod.PaymentMethod)).AsString(500).NotNullable()
-                .WithColumn(nameof(EcPayCvsShippingMethod.TemperatureType)).AsString(50).NotNullable().WithDefaultValue("H")
+                .WithColumn(nameof(EcPayCvsShippingMethod.TemperatureTypeId)).AsInt32().NotNullable().WithDefaultValue(5)
                 .WithColumn(nameof(EcPayCvsShippingMethod.LengthLimit)).AsDecimal(18,4).NotNullable().WithDefaultValue(0)
                 .WithColumn(nameof(EcPayCvsShippingMethod.SizeLimit)).AsDecimal(18,4).NotNullable().WithDefaultValue(0)
                 .WithColumn(nameof(EcPayCvsShippingMethod.WeightSizeLimit)).AsDecimal(18,4).NotNullable().WithDefaultValue(0)

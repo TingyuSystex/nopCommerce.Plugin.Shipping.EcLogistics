@@ -1,6 +1,29 @@
 @model Nop.Plugin.Shipping.EcLogistics.Models.CvsMapModel;
 
 <script>
+    $(document).ready(function() {
+        if (@Model.Addresses.Count > 0) {
+            changeInput();
+        } else {
+            $('#choos-other-div').removeAttr("hidden");
+        }
+    });
+
+    function chooseOther() {
+        changeInput();
+        var option = $('#shipping-address-select').val();
+        if (option == "other") {
+            $('#choos-other-div').removeAttr("hidden");
+        } else {
+            $('#choos-other-div').attr("hidden", "true");
+        }
+    }
+
+    function changeInput() {
+        var selected = $('#shipping-address-select').val() == "other" ? "" : $('#shipping-address-select').val();
+        $('#cvsAddressId').val(selected);
+    }
+
     function getStore() {
         var result = null;
         var data = {
@@ -25,19 +48,54 @@
     }
 </script>
 
-@*<table width="100%" cellpadding="0" cellspacing="0">
-    <tr>
-        <td>
-            <p><b>@T("Plugins.Shipping.EcLogistics.SelectCvsStore")</b></p>
-        </td>
-    </tr>
-</table><br/>*@
-<div>
+<div asp-validation-summary="ModelOnly" class="message-error"></div>
+<div class="inputs">
+    <label asp-for="ReceiverFirstName" asp-postfix=":"></label>
+    <input asp-for="ReceiverFirstName" />
+    <nop-required />
+    <span asp-validation-for="ReceiverFirstName"></span>
+</div>
+<div class="inputs">
+    <label asp-for="ReceiverLastName" asp-postfix=":"></label>
+    <input asp-for="ReceiverLastName" />
+    <nop-required />
+    <span asp-validation-for="ReceiverLastName"></span>
+</div>
+<div class="inputs">
+    <label asp-for="ReceiverCellPhone" asp-postfix=":"></label>
+    <input asp-for="ReceiverCellPhone" />
+    <nop-required />
+    <span asp-validation-for="ReceiverCellPhone"></span>
+</div>
+
+@if (Model.Addresses.Count > 0)
+{
+    <div class="section select-shipping-address">
+        <label for="shipping-address-select"><p><b>@T("Plugins.Shipping.EcLogistics.SelectCvsStore")</b></p></label>
+        <div>
+            @*<select name="shipping_address_id" id="shipping-address-select" class="address-select"
+                title="" onchange="Shipping.newAddress(!this.value)">*@
+            <select name="shipping_address_id" id="shipping-address-select" class="address-select"
+                title="" onchange="chooseOther();">
+                @foreach (var address in Model.Addresses)
+                {
+                    <option value="@(address.Id)">@(address.Address)</option>
+                }
+                <option value="other">@T("Plugins.Shipping.EcLogistics.SelectOther")</option>
+            </select>
+        </div>
+    </div>
+}
+<br />
+
+<div id="choos-other-div" hidden>
     <button type="button" class="button-1 new-address-next-step-button" onclick="getStore()">
         @*@T("Plugins.Shipping.EcLogistics.SelectOther")*@
         @T("Plugins.Shipping.EcLogistics.SelectCvsStore")
     </button>
-</div><br/>
-<p><b>@T("Plugins.Shipping.EcLogistics.SelectStore")：</b><span id="selectedCvs"></span></p>
-<br/>  
-<input id="cvsAddressId" name="cvsAddressId" hidden/>
+    <br />
+    <p><b>@T("Plugins.Shipping.EcLogistics.SelectStore")：</b><span id="selectedCvs"></span></p>
+</div>
+<br />
+<input id="cvsAddressId" name="cvsAddressId" hidden />
+

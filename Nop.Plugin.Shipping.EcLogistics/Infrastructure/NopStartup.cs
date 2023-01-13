@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nop.Core.Infrastructure;
+using Nop.Plugin.Shipping.EcLogistics.Factories;
 using Nop.Plugin.Shipping.EcLogistics.Services;
+using Nop.Plugin.Shipping.EcLogistics.Validators;
 
 namespace Nop.Plugin.Shipping.EcLogistics.Infrastructure
 {
@@ -20,7 +23,7 @@ namespace Nop.Plugin.Shipping.EcLogistics.Infrastructure
         {
             //register custom services
             services.AddScoped<EcLogisticsService>();
-            
+            services.AddScoped<EcLogisticsModelFactory>();
         }
 
         /// <summary>

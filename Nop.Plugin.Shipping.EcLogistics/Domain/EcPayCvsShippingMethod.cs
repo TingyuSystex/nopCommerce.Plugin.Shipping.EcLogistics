@@ -1,5 +1,6 @@
 ﻿using System;
 using Nop.Core;
+using Nop.Core.Domain.Catalog;
 
 namespace Nop.Plugin.Shipping.EcLogistics.Domain
 {
@@ -11,7 +12,13 @@ namespace Nop.Plugin.Shipping.EcLogistics.Domain
 
         public string PaymentMethod { get; set; }
 
-        public string TemperatureType { get; set; }
+        public int TemperatureTypeId { get; set; }
+
+        public ProductTemperatureType ProductTemperatureType
+        {
+            get => (ProductTemperatureType)TemperatureTypeId;
+            set => TemperatureTypeId = (int)value;
+        }
 
         public decimal LengthLimit { get; set; }
 

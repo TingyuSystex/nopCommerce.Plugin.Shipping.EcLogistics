@@ -1,0 +1,12 @@
+﻿{
+  "Group": "Shipping rate computation",
+  "FriendlyName": "綠界物流 黑貓宅配",
+  "SystemName": "Shipping.EcLogistics.Tcat",
+  "Version": "1.00",
+  "SupportedVersions": [ "4.50" ],
+  "Author": "SYSTEX",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Shipping.EcLogistics.Tcat.dll",
+  "Description": "綠界物流 黑貓宅配",
+  "DependsOnSystemNames": [ "Shipping.EcLogistics" ]
+}

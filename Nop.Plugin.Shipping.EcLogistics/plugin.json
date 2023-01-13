@@ -2,7 +2,7 @@
   "Group": "Widgets",
   "FriendlyName": "綠界物流(EC Logistics)",
   "SystemName": "Shipping.EcLogistics",
-  "Version": "1.00",
+  "Version": "1.04",
   "SupportedVersions": [ "4.50" ],
   "Author": "SYSTEX",
   "DisplayOrder": 1,

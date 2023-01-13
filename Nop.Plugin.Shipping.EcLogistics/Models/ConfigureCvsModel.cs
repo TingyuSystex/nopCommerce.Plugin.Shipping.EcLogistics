@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Nop.Core.Domain.Catalog;
 using Nop.Web.Framework.Models;
 using Nop.Web.Framework.Mvc.ModelBinding;
 
@@ -11,6 +12,7 @@ namespace Nop.Plugin.Shipping.EcLogistics.Models
         {
             PaymentMethods = new List<string>();
             AvailablePaymentMethod = new List<SelectListItem>();
+            AvailableTemperatureType = new List<SelectListItem>();
         }
 
         [NopResourceDisplayName("Plugins.Shipping.EcLogistics.Fields.Name")]
@@ -26,7 +28,15 @@ namespace Nop.Plugin.Shipping.EcLogistics.Models
 
 
         [NopResourceDisplayName("Plugins.Shipping.EcLogistics.Fields.TemperatureType")]
-        public string TemperatureType { get; set; }
+        public IList<SelectListItem> AvailableTemperatureType { get; set; }
+        [NopResourceDisplayName("Plugins.Shipping.EcLogistics.Fields.TemperatureType")]
+        public int TemperatureTypeId { get; set; }
+
+        public ProductTemperatureType ProductTemperatureType
+        {
+            get => (ProductTemperatureType)TemperatureTypeId;
+            set => TemperatureTypeId = (int)value;
+        }
 
         [NopResourceDisplayName("Plugins.Shipping.EcLogistics.Fields.LengthLimit")]
         public decimal LengthLimit { get; set; }

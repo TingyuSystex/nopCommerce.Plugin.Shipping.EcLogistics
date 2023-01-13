@@ -1,0 +1,43 @@
+@model Nop.Plugin.Shipping.EcLogistics.Models.CvsMapModel;
+
+<script>
+    function getStore() {
+        var result = null;
+        var data = {
+            cvsSubType: "@Model.CvsSubType"
+        };
+
+        $.ajax({
+            cache: false,
+            type: "POST",
+            data: data,
+            url: "@Html.Raw(Url.Action("GetCvs", "EcLogistics"))",
+            async: false,
+            success: function (data) {
+                if (data) {
+                    result = data.mapUrl;
+                    OpenWindow(result, 800, 800, true);
+                } else {
+                    display_nop_error(data);
+                }
+            }
+        });
+    }
+</script>
+
+@*<table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+        <td>
+            <p><b>@T("Plugins.Shipping.EcLogistics.SelectCvsStore")</b></p>
+        </td>
+    </tr>
+</table><br/>*@
+<div>
+    <button type="button" class="button-1 new-address-next-step-button" onclick="getStore()">
+        @*@T("Plugins.Shipping.EcLogistics.SelectOther")*@
+        @T("Plugins.Shipping.EcLogistics.SelectCvsStore")
+    </button>
+</div><br/>
+<p><b>@T("Plugins.Shipping.EcLogistics.SelectStore")：</b><span id="selectedCvs"></span></p>
+<br/>  
+<input id="cvsAddressId" name="cvsAddressId" hidden/>

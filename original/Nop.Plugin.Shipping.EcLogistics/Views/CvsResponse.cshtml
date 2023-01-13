@@ -1,0 +1,11 @@
+@inject INopHtmlHelper NopHtml
+
+<h1>@ViewBag.storeName</h1>
+<input id="addressId" value="@ViewBag.addressId"/>
+<script>
+    window.opener.document.getElementById('cvsAddressId').value =  document.getElementById('addressId').value;
+    window.opener.document.getElementById('selectedCvs').innerText = document.getElementsByTagName('h1')[0].innerText;
+    window.close();
+</script>
+
+@NopHtml.GenerateInlineScripts(ResourceLocation.Footer)

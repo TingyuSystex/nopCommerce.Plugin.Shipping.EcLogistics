@@ -1,0 +1,12 @@
+﻿{
+  "Group": "Shipping rate computation",
+  "FriendlyName": "綠界物流 7-11超商取貨",
+  "SystemName": "Shipping.EcLogistics.Unimart",
+  "Version": "1.00",
+  "SupportedVersions": [ "4.50" ],
+  "Author": "SYSTEX",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Shipping.EcLogistics.Unimart.dll",
+  "Description": "綠界物流 7-11超商取貨",
+  "DependsOnSystemNames": [ "Shipping.EcLogistics" ]
+}

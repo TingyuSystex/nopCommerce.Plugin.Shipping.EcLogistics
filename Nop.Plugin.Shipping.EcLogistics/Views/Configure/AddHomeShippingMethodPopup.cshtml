@@ -1,0 +1,158 @@
+﻿@model EcPayHomeShippingFeeModel
+
+@using Nop.Core.Domain.Catalog
+@using Nop.Plugin.Shipping.EcLogistics.Domain
+@using Nop.Plugin.Shipping.EcLogistics.Models
+@using Nop.Services
+@using Nop.Web.Framework.TagHelpers.Admin
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Nop.Web.Framework.TagHelpers.Shared
+@inject ILocalizationService localizationService
+@using Nop.Services.Localization
+
+@{
+    Layout = "_AdminPopupLayout";
+    var isTcat = Context.Request.Query["homeType"] == "TCAT";
+    var temperatureType=await localizationService.GetLocalizedEnumAsync(ProductTemperatureType.Normal);
+}
+
+@if (ViewBag.RefreshPage == true)
+{
+    <script>
+        try { window.opener.document.forms['@(Context.Request.Query["formId"])'].@(Context.Request.Query["btnId"]).click(); }
+        catch (e) { }
+        window.close();
+    </script>
+}
+
+<form asp-controller="EcLogistics" asp-action="SaveAddHomeShippingMethodPopup" method="post"
+      asp-route-btnId="@Context.Request.Query["btnId"]"
+      asp-route-formId="@Context.Request.Query["formId"]"
+      asp-route-homeType="@Context.Request.Query["homeType"]">
+    <div class="content-header clearfix">
+        <h1 class="float-left">
+            @T("Plugins.Shipping.EcLogistics.Home.ShippingMethod.AddTitle")
+        </h1>
+        <div class="float-right">
+            <button type="submit" name="save" class="btn btn-primary">@T("Admin.Common.Save")</button>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="form-horizontal">
+
+                @*<div asp-validation-summary="All"></div>*@
+                <div style="color: red; margin: 10px;">
+                    @ViewBag.error
+                </div>
+                <input asp-for="Id" type="hidden" />
+
+                <div class="cards-group">
+                    <div class="card card-default card-popup">
+
+                        <div class="card-body">
+                            @if (isTcat)
+                            {
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="SizeFrom" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="SizeFrom" asp-required="true" />
+                                        <span asp-validation-for="SizeFrom"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="SizeTo" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="SizeTo" asp-required="true" />
+                                        <span asp-validation-for="SizeTo"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row ">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="TemperatureTypeId" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-select asp-for="TemperatureTypeId" asp-items="@await (((ProductTemperatureType)Model.TemperatureTypeId).ToSelectListAsync())" />
+                                        <span asp-validation-for="TemperatureTypeId"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="Fee" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="Fee" asp-required="true" />
+                                        <span asp-validation-for="Fee"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="ForeignFee" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="ForeignFee" asp-required="true" />
+                                        <span asp-validation-for="ForeignFee"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="HolidayExtraFee" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="HolidayExtraFee" />
+                                        <span asp-validation-for="HolidayExtraFee"></span>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="WeightFrom" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="WeightFrom" asp-required="true" />
+                                        <span asp-validation-for="WeightFrom"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="WeightTo" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="WeightTo" asp-required="true" />
+                                        <span asp-validation-for="WeightTo"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="TemperatureTypeId" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="form-text-row">@temperatureType</div>
+                                        <input type="hidden" asp-for="TemperatureTypeId" />
+                                        <span asp-validation-for="TemperatureTypeId"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <nop-label asp-for="Fee" />
+                                    </div>
+                                    <div class="col-md-9">
+                                        <nop-editor asp-for="Fee" asp-required="true" />
+                                        <span asp-validation-for="Fee"></span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</form>

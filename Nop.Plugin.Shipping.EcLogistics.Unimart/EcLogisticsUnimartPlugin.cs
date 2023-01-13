@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LinqToDB.Tools;
 using Nop.Core;
+using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Shipping;
 using Nop.Data;
 using Nop.Plugin.Shipping.EcLogistics.Domain;
@@ -86,22 +88,32 @@ namespace Nop.Plugin.Shipping.EcLogistics.Unimart
 
         public override async Task InstallAsync()
         {
-            // insert UNIMART to EcPayCvsShippingMethod in DB 
-            await _ecPayCvsShippingMethodRepository.InsertAsync(new EcPayCvsShippingMethod
+            var data = _ecPayCvsShippingMethodRepository.GetAll();
+            var existed = "UNIMART".In(data.Select(cvs => cvs.Name));
+            if (!existed)
             {
-                Name = "UNIMART",
-                Description = "7-11 超商取貨",
-                PaymentMethod = "",
-                TemperatureType = "H",
-                CreatedOnUtc = DateTime.UtcNow,
-                UpdatedOnUtc = DateTime.UtcNow
-            });
+                // insert UNIMART to EcPayCvsShippingMethod in DB 
+                await _ecPayCvsShippingMethodRepository.InsertAsync(new EcPayCvsShippingMethod
+                {
+                    Name = "UNIMART",
+                    Description = "7-11 超商取貨",
+                    PaymentMethod = "",
+                    TemperatureTypeId = (int)ProductTemperatureType.Normal,
+                    CreatedOnUtc = DateTime.UtcNow,
+                    UpdatedOnUtc = DateTime.UtcNow
+                });
+            }
 
             //locales
             await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
             {
                 ["Plugins.Shipping.EcLogisticsUnimart.Name"] = "7-11 超商取貨",
             });
+
+            await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
+            {
+                ["Plugins.Shipping.EcLogisticsUnimart.Name"] = "7-11",
+            },1);
 
             await base.InstallAsync();
         }
@@ -110,7 +122,8 @@ namespace Nop.Plugin.Shipping.EcLogistics.Unimart
         {
             var modelData = await _ecPayCvsShippingMethodRepository.GetAllAsync(x =>
                 x.Where(sm => sm.Name.Equals("UNIMART")));
-            await _ecPayCvsShippingMethodRepository.DeleteAsync(modelData[0]);
+            if (modelData.Any())
+                await _ecPayCvsShippingMethodRepository.DeleteAsync(modelData[0]);
 
             //locales
             await _localizationService.DeleteLocaleResourcesAsync("Plugins.Shipping.EcLogisticsUnimart");
@@ -137,6 +150,16 @@ namespace Nop.Plugin.Shipping.EcLogistics.Unimart
             var shippingOption = model.FirstOrDefault();
 
             var options = new GetShippingOptionResponse() { ShippingOptions = new List<ShippingOption>() };
+
+            var items = getShippingOptionRequest.Items.Where(x => x.Product.IsShipEnabled && !x.Product.IsFreeShipping && !x.Product.ShipSeparately);
+            var temperatureIdList = items.Select(i => i.Product.ProductTemperatureType).Distinct().ToList();
+            // 購物車內商品溫層不統一
+            if (temperatureIdList.Count > 1)
+                return options;
+            var temperatureId = (int)temperatureIdList.FirstOrDefault();
+            // 溫層不符
+            if (temperatureId == (int)ProductTemperatureType.Low || temperatureId == (int)ProductTemperatureType.Freeze)
+                return options;
 
             if (CheckShippingLimit(shippingOption, getShippingOptionRequest))
             {
@@ -184,7 +207,7 @@ namespace Nop.Plugin.Shipping.EcLogistics.Unimart
 
         #endregion
 
-        //#region Shipping Provider
+        #region 註解Shipping Provider
 
         ///// <summary>
         /////  Gets available shipping options
@@ -293,6 +316,6 @@ namespace Nop.Plugin.Shipping.EcLogistics.Unimart
         //    return Task.FromResult<IShipmentTracker>(null);
         //}
 
-        //#endregion
+       #endregion
     }
 }

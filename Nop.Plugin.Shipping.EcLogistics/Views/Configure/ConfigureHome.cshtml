@@ -1,0 +1,270 @@
+﻿@model EcPayHomeShippingMethodModel
+
+@using Nop.Core.Domain.Catalog
+@using Nop.Plugin.Shipping.EcLogistics.Models
+@using Nop.Plugin.Shipping.EcLogistics.Domain
+@using Nop.Services
+@using Nop.Web.Framework.TagHelpers.Admin
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = "_ConfigurePlugin";
+    var isTcat = Model.Name == "TCAT";
+}
+
+<form asp-controller="EcLogistics" asp-action="ConfigureHome" method="post" id="eclhome-shippingmethods-form">
+    <div class="cards-group">
+        <div class="card card-default">
+            <div class="card-header">
+                @T("Plugins.Shipping.EcLogistics.ShippingMethod.EditTitle") - @T("Plugins.Shipping.EcLogistics" + Model.Name + ".Name")
+            </div>
+            <div class="card-body">
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="Name" />
+                    </div>
+                    <div class="col-md-9">
+                        <div class="form-text-row">@Model.Name</div>
+                        <input type="hidden" asp-for="Name" />
+                        <span asp-validation-for="Name"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="Description" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="Description" asp-required="true" />
+                        <span asp-validation-for="Description"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="AvailablePaymentMethod" />
+                    </div>
+                    <div class="col-md-9">
+                        @foreach (var pm in Model.AvailablePaymentMethod)
+                        {
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" type="checkbox" name="PaymentMethods" value="@(pm.Value)" checked="@(pm.Selected)" />
+                                    @(pm.Text)
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="IsFixedFee" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="IsFixedFee" html-attributes="@(new { onclick = "changeHomeFeeCard()" })" />
+                        <span asp-validation-for="IsFixedFee"></span>
+                    </div>
+                </div>
+                <nop-nested-setting asp-for="IsFixedFee">
+                    <div class="form-group row advanced-setting">
+                        <div class="col-md-3">
+                            <nop-label asp-for="Fee" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="Fee" />
+                            <span asp-validation-for="Fee"></span>
+                        </div>
+                    </div>
+                </nop-nested-setting>
+                @if (isTcat)
+                {
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-label asp-for="ScheduledPickupTime" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-select asp-for="ScheduledPickupTime" asp-items="Model.AvailablePickupTimes" />
+                        </div>
+                    </div>
+                }
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="TransitDay" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="TransitDay" />
+                        <span asp-validation-for="TransitDay"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-9 offset-md-3">
+                        <button type="submit" name="save" class="btn btn-primary">@T("Admin.Common.Save")</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-default" id="homefee-card">
+            <div class="card-header">
+                @T("Plugins.Shipping.EcLogistics.Home.ConfigFee")
+            </div>
+            <div class="card-body">
+                <div id="ecl-shipping-methods-area">
+                    @if (isTcat)
+                    {
+                        @await Html.PartialAsync("Table", new DataTablesModel
+                    {
+                    Name = "eclhome-shippingmethods-grid",
+                    UrlRead = new DataUrl("GetTcatShippingFees", "EcLogistics", null),
+                    UrlDelete = new DataUrl("DeleteHomeShippingMethod", "EcLogistics", null),
+                    Paging = false,
+                    RefreshButton = true,
+                    Info = false,
+                    ColumnCollection = new List<ColumnProperty>
+                    {
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.SizeFrom))
+                    {
+                    Title = T("Plugins.Shipping.EcLogistics.Home.Fields.SizeFrom").Text,
+                    Width = "200"
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.SizeTo))
+                    {
+                    Title = T("Plugins.Shipping.EcLogistics.Home.Fields.SizeTo").Text,
+                    Width = "200"
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.TemperatureType))
+                    {
+                    Title = T("Plugins.Shipping.EcLogistics.Fields.TemperatureType").Text,
+                    Width = "150",
+                    ClassName = NopColumnClassDefaults.CenterAll
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.Fee))
+                    {
+                    Title = T("Plugins.Shipping.EcLogistics.Home.Fields.Fee").Text,
+                    Width = "150",
+                    ClassName = NopColumnClassDefaults.CenterAll
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.ForeignFee))
+                    {
+                    Title = T("Plugins.Shipping.EcLogistics.Home.Fields.ForeignFee").Text,
+                    Width = "100",
+                    ClassName = NopColumnClassDefaults.CenterAll
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.HolidayExtraFee))
+                    {
+                    Title = T("Plugins.Shipping.EcLogistics.Home.Fields.HolidayExtraFee").Text,
+                    Width = "150",
+                    ClassName = NopColumnClassDefaults.CenterAll
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.Id))
+                    {
+                    Title = T("Admin.Common.Edit").Text,
+                    ClassName = NopColumnClassDefaults.Button,
+                    Width = "100",
+                    Render = new RenderCustom("renderColumnEdit")
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.Id))
+                    {
+                    Title = T("Admin.Common.Delete").Text,
+                    ClassName = NopColumnClassDefaults.Button,
+                    Render = new RenderButtonRemove(T("Admin.Common.Delete").Text),
+                    Width = "100",
+                    }
+                    }
+                    })
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("Table", new DataTablesModel
+                    {
+                    Name = "eclhome-shippingmethods-grid",
+                    UrlRead = new DataUrl("GetPostShippingFees", "EcLogistics", null),
+                    UrlDelete = new DataUrl("DeleteHomeShippingMethod", "EcLogistics", null),
+                    Paging = false,
+                    RefreshButton = true,
+                    Info = false,
+                    ColumnCollection = new List<ColumnProperty>
+                    {
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.WeightFrom))
+                    {
+                    Title = T("Plugins.Shipping.EcLogistics.Home.Fields.WeightFrom").Text,
+                    Width = "200"
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.WeightTo))
+                    {
+                    Title = T("Plugins.Shipping.EcLogistics.Home.Fields.WeightTo").Text,
+                    Width = "200"
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.TemperatureType))
+                    {
+                    Title = T("Plugins.Shipping.EcLogistics.Fields.TemperatureType").Text,
+                    Width = "150",
+                    ClassName = NopColumnClassDefaults.CenterAll
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.Fee))
+                    {
+                    Title = T("Plugins.Shipping.EcLogistics.Home.Fields.Fee").Text,
+                    Width = "150",
+                    ClassName = NopColumnClassDefaults.CenterAll
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.Id))
+                    {
+                    Title = T("Admin.Common.Edit").Text,
+                    ClassName = NopColumnClassDefaults.Button,
+                    Width = "100",
+                    Render = new RenderCustom("renderColumnEdit")
+                    },
+                    new ColumnProperty(nameof(EcPayHomeShippingFeeModel.Id))
+                    {
+                    Title = T("Admin.Common.Delete").Text,
+                    ClassName = NopColumnClassDefaults.Button,
+                    Render = new RenderButtonRemove(T("Admin.Common.Delete").Text),
+                    Width = "100",
+                    }
+                    }
+                    })
+                    }
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="submit" id="btnAddNewRecord" class="btn btn-primary"
+                        onclick="javascript:OpenWindow('@Url.Action("AddHomeShippingMethodPopup", "EcLogistics", new {btnId = "btnRefresh", formId = "eclhome-shippingmethods-form", homeType = Model.Name})', 800, 600, true);return false;">
+                    @T("Plugins.Shipping.EcLogistics.Home.ShippingMethod.Addrecord")
+                </button>
+                <button type="submit" name="save" id="btnRefresh" class="btn btn-default" style="display: none"></button>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+<script asp-location="Footer">
+
+    function renderColumnEdit(data, type, row, meta) {
+        return '<button onclick=\"javascript:OpenWindow(\'@Url.Action("EditHomeShippingMethodPopup", "EcLogistics")?id=' + data + '&btnId=btnRefresh&formId=eclhome-shippingmethods-form&homeType=@Model.Name\', 800, 600, true); return false;\" class="btn btn-default"><i class="fas fa-pencil-alt"></i>@T("Admin.Common.Edit").Text</button>';
+    }
+
+    function changeHomeFeeCard() {
+        var isFixedFee = $('#IsFixedFee').prop('checked');
+        if (isFixedFee) {
+            $('#homefee-card').css("opacity", 0.5);
+            $('#btnAddNewRecord').prop('disabled', true);
+        } else {
+            $('#homefee-card').css("opacity", 1);
+            $('#btnAddNewRecord').prop('disabled', false);
+        }
+    }
+
+    $(document)
+        .ready(function() {
+            changeHomeFeeCard();
+            $('#btnRefresh')
+                .click(function() {
+                    //refresh grid
+                    updateTable('#eclhome-shippingmethods-grid');
+
+                    //return false to don't reload a page
+                    return false;
+                });
+
+        });
+</script>
